@@ -6,6 +6,17 @@ import { neonConfig } from '@neondatabase/serverless';
 import ws from 'ws';
 neonConfig.webSocketConstructor = ws;
 
+/**
+ * prisma.js
+ *
+ * This file creates a single Prisma client instance
+ * that can be reused across the entire application.
+ *
+ * Why?
+ * Creating multiple Prisma clients can cause
+ * connection exhaustion in production environments.
+ */
+
 // To work in edge environments (Cloudflare Workers, Vercel Edge, etc.), enable querying over fetch
 // neonConfig.poolQueryViaFetch = true
 

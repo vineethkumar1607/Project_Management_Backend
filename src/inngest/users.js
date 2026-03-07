@@ -1,4 +1,4 @@
-import { inngest } from "../client.js";
+import { inngest } from "./client.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -32,7 +32,7 @@ export const userCreation = inngest.createFunction(
 
         await prisma.user.create({
             data: {
-                id: data.id, // Clerk ID 
+                id: clerkUser.id, // Clerk ID 
                 name: fullName, // mapping to Prisma `name`
                 email: clerkUser.email_addresses[0]?.email_address, // unique email
                 image: clerkUser.image_url ?? "", // profile image
@@ -62,7 +62,7 @@ export const userUpdation = inngest.createFunction(
 
         await prisma.user.update({
             where: {
-                email: data.email_addresses[0]?.email_address,
+                id: data.id
             },
             data: {
                 name: fullName,

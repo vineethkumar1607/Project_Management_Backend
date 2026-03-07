@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { clerkMiddleware } from '@clerk/express'
 import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest/index.js"
+import { inngest } from "./inngest/client.js"
+import { functions } from "./inngest/index.js"
 
 // environment variables
 dotenv.config();
@@ -34,10 +35,38 @@ This route is used by Inngest:
 - Handle retries, failures, and step execution
 */
 
+/**
+ * Inngest Endpoint
+ *
+ * Inngest uses this route to:
+ * - Discover functions
+ * - Trigger event handlers
+ * - Manage retries
+ */
+
 app.use("/api/inngest", serve({
   client: inngest,          // Inngest client instance
   functions                   // Array of all registered Inngest functions
 }));
+
+
+app.post("/api/webhooks/clerk", async (req, res) => {
+  try {
+    const { type, data } = req.body;
+
+    await inngest.send({
+      name: `clerk/${type}`,
+      data,
+    });
+
+    res.status(200).json({ received: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Webhook error");
+  }
+});
+
+
 
 const PORT = process.env.PORT || 5000;
 

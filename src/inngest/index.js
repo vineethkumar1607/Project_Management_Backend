@@ -1,13 +1,17 @@
-import { Inngest } from "inngest";
+/**
+ * index.js
+ *
+ * This file acts as the central registry for all
+ * Inngest background functions.
+ 
+ * Instead of importing them individually in server.js,
+ * we collect them here and export them as one array.
+ */
+
 import { userCreation, userUpdation, userDeletion } from "./users.js";
 
-// client to send and receive events
-export const inngest = new Inngest({ id: "project-management" });
-
-//  inngest function to save the user data to the database
-// All inngest functions registered
 export const functions = [
-    userCreation,
-    userUpdation,
-    userDeletion,
+  userCreation,
+  userUpdation,
+  userDeletion,
 ];
