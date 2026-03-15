@@ -9,9 +9,15 @@
  */
 
 import { userCreation, userUpdation, userDeletion } from "./users.js";
+import { workspaceCreation, workspaceDeleted, workspaceMemberCreated, workspaceUpdated } from "./workspace.js";
 
 export const functions = [
   userCreation,
   userUpdation,
   userDeletion,
+  workspaceCreation,
+  workspaceMemberCreated,
+  workspaceDeleted,
+  workspaceUpdated
+
 ];
