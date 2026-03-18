@@ -1,3 +1,4 @@
+//server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -5,6 +6,11 @@ import { clerkMiddleware } from '@clerk/express'
 import { serve } from "inngest/express";
 import { inngest } from "./inngest/client.js"
 import { functions } from "./inngest/index.js"
+
+import workspaceRoutes from "./routes/workspaceRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import taskRoutes from "./routes/tasksRoutes.js";
+import commentRoutes from "./routes/commenstRoutes.js";
 
 // environment variables
 dotenv.config();
@@ -66,6 +72,23 @@ app.post("/api/webhooks/clerk", async (req, res) => {
   }
 });
 
+// Mount workspace-related routes
+// All routes inside workspaceRoutes will be prefixed with /api/workspace
+// GET  /api/workspace
+// POST /api/workspace/add-member
+app.use("/api/workspace", workspaceRoutes);
+
+// Mount project-related routes
+// GET /api/workspace/:workspaceId/projects
+app.use("/api/projects", projectRoutes);
+
+// Mount task-related routes
+// GET /api/project/:projectId/tasks
+app.use("/api/tasks", taskRoutes);
+
+// Mount comment-related routes
+// GET /api/task/:taskId/comments
+app.use("/api/comments", commentRoutes);
 
 
 const PORT = process.env.PORT || 5000;
