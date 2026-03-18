@@ -18,10 +18,13 @@ export const workspaceCreation = inngest.createFunction(
     // Fired when Clerk emits the organization.created event
     { event: "clerk/organization.created" },
 
+
     async ({ event, step }) => {
 
         // Organization payload coming from Clerk
         const org = event.data;
+        console.log("ORG EVENT RECEIVED:", event.data);
+
 
         /*
         Create or update the workspace.
@@ -49,7 +52,9 @@ export const workspaceCreation = inngest.createFunction(
                     ownerId: org.created_by,
                     imageUrl: org.image_url ?? "",
                 },
+
             });
+
         });
 
         /*
