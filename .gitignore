@@ -1,3 +1,9 @@
 node_modules
 .env
 notes.docx
+
+
+
+add Swagger API docs
+add logging (winston/pino)
+add error handling middleware (global)

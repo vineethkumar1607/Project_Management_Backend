@@ -58,6 +58,22 @@ server
 * PostgreSQL database managed through Prisma ORM
 * Neon adapter used for serverless compatibility
 
+**Controllers**
+
+- Handle business logic
+- Interact with Prisma ORM
+- Format responses for frontend
+
+**Routes**
+
+- Define API endpoints
+- Attach middleware and controllers
+
+**Middleware**
+
+- Authentication via Clerk
+- Protects private routes
+- Injects userId into request
 # Features
 
 ### Authentication Integration
@@ -80,6 +96,26 @@ Prisma ORM is used to manage the PostgreSQL database schema and queries.
 ### Multi-Tenant Design
 
 The application supports multiple workspaces where users can collaborate across projects.
+### Workspace Management
+
+- Fetch user workspaces
+- Add members to workspace
+- Role-based access (ADMIN / MEMBER)
+
+### Project Management
+
+- Fetch projects per workspace
+- Access control based on membership
+
+### Task Management
+
+- Fetch tasks per project
+- Includes assignee and comments
+
+### Comment System
+
+- Fetch task-level comments
+- Includes user metadata
 
 # API Endpoints
 
@@ -130,6 +166,108 @@ clerk/user.deleted
 Function behavior:
 
 * Removes the user from the database
+
+## Workspace APIs
+
+### Get User Workspaces
+GET /api/workspace
+
+Returns all workspaces the authenticated user belongs to.
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": "workspace_id",
+      "name": "Workspace Name",
+      "slug": "workspace-slug",
+      "image_url": "https://..."
+    }
+  ]
+}
+
+---
+
+### Add Workspace Member
+POST /api/workspace/add-member
+
+Adds a user to a workspace (Admin only).
+
+Request Body:
+{
+  "email": "user@example.com",
+  "role": "ADMIN | MEMBER",
+  "workspaceId": "workspace_id",
+  "message": "Optional invite message"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Member added successfully",
+  "data": { ... }
+}
+
+## Project APIs
+
+### Get Workspace Projects
+GET /api/projects/workspace/:workspaceId/projects
+
+Fetch all projects within a workspace.
+
+Response:
+{
+  "success": true,
+  "data": [ ...projects ]
+}
+
+## Task APIs
+
+### Get Project Tasks
+GET /api/tasks/project/:projectId/tasks
+
+Fetch all tasks belonging to a project.
+
+Includes:
+- assignee details
+- comments
+
+Response:
+{
+  "success": true,
+  "data": [ ...tasks ]
+}
+
+
+## Comment APIs
+
+### Get Task Comments
+GET /api/comments/task/:taskId/comments
+
+Fetch all comments for a task.
+
+Response:
+{
+  "success": true,
+  "data": [ ...comments ]
+}
+
+# API Response Format
+
+All APIs follow a consistent response structure:
+
+Success:
+{
+  "success": true,
+  "data": ...
+}
+
+Error:
+{
+  "success": false,
+  "message": "Error message"
+}
 
 # Database Design
 The schema is designed for a **multi-workspace project management platform**.
@@ -216,6 +354,47 @@ Used for runtime database access.
 
 `DIRECT_URL`
 Used for migrations.
+
+## Workspace APIs
+
+### Get User Workspaces
+GET /api/workspace
+
+Returns all workspaces the authenticated user belongs to.
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": "workspace_id",
+      "name": "Workspace Name",
+      "slug": "workspace-slug",
+      "image_url": "https://..."
+    }
+  ]
+}
+
+
+### Add Workspace Member
+POST /api/workspace/add-member
+
+Adds a user to a workspace (Admin only).
+
+Request Body:
+{
+  "email": "user@example.com",
+  "role": "ADMIN | MEMBER",
+  "workspaceId": "workspace_id",
+  "message": "Optional invite message"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Member added successfully",
+  "data": { ... }
+}
 
 # Development Setup
 
