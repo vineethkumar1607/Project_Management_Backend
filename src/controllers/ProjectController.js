@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { createProjectService, updateProjectService } from "../services/projectService.js";
 
 const prisma = new PrismaClient();
 
@@ -11,8 +12,77 @@ Fetch all projects that belong to a workspace.
 When the user switches workspace,
 the frontend will load projects for that workspace.
 */
+export const hasPermission = (members, userId, allowedRoles = []) => {
+    return members.some(
+        (member) =>
+            member.userId === userId && allowedRoles.includes(member.role)
+    );
+};
+
+export const ROLES = {
+    ADMIN: "ADMIN",
+    MEMBER: "MEMBER",
+};
 
 
+export const createProject = async (req, res) => {
+    try {
+        const { userId } = await req.auth();
+
+        const project = await createProjectService(userId, req.body);
+
+        const formattedProject = {
+            id: project.id,
+            name: project.name,
+            status: project.status,
+            progress: project.progress,
+            priority: project.priority,
+            start_date: project.start_date,
+            end_date: project.end_date,
+            team_lead: project.team_lead,
+            members: project.members.map(m => ({
+                id: m.user.id,
+                email: m.user.email,
+            }))
+        };
+
+        return res.status(201).json({
+            success: true,
+            message: "Project created successfully",
+            data: formattedProject,
+        });
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
+    }
+};
+
+
+export const updateProject = async (req, res) => {
+    try {
+        const { userId } = await req.auth();
+        const { projectId } = req.params;
+
+        const project = await updateProjectService(
+            userId,
+            projectId,
+            req.body
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Project updated successfully",
+            data: project,
+        });
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+        });
+    }
+};
 
 export const getWorkspaceProjects = async (req, res) => {
     try {
@@ -51,9 +121,6 @@ export const getWorkspaceProjects = async (req, res) => {
         });
     }
 };
-
-
-
 
 
 /*
@@ -119,9 +186,6 @@ export const getProjectTasks = async (req, res) => {
         });
     }
 };
-
-
-
 
 
 /*
