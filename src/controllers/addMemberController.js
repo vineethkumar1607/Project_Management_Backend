@@ -1,3 +1,5 @@
+
+import {addProjectMemberService} from "../services/addMembersServices.js"
 /*
 addworkspacecontroller.js
 Adds an existing user to a workspace as a member.
@@ -102,6 +104,34 @@ export const addWorkspaceMember = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to add workspace member"
+        });
+    }
+};
+
+
+
+export const addProjectMember = async (req, res) => {
+    try {
+        const { userId } = await req.auth();
+        const { projectId } = req.params;
+        const { email } = req.body;
+
+        const result = await addProjectMemberService(
+            userId,
+            projectId,
+            email
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Member added successfully",
+            data: result
+        });
+
+    } catch (error) {
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Internal Server Error"
         });
     }
 };
