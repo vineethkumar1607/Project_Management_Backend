@@ -375,6 +375,97 @@ Response:
   ]
 }
 
+---
+
+### Create Project
+POST /api/projects
+
+Creates a new project inside a workspace.
+
+Request Body:
+{
+  "name": "Project Name",
+  "description": "Optional description",
+  "workspaceId": "workspace_id",
+  "team_lead": "user@example.com",
+  "team_members": ["user1@example.com", "user2@example.com"],
+  "status": "ACTIVE",
+  "priority": "HIGH",
+  "start_date": "2025-01-01",
+  "end_date": "2025-02-01"
+}
+
+Rules:
+
+- Only ADMIN can create a project
+- Team lead must exist
+- Members must belong to the workspace
+
+Response:
+{
+  "success": true,
+  "message": "Project created successfully",
+  "data": { ...project }
+}
+
+---
+
+### Update Project
+PATCH /api/projects/:projectId
+
+Updates project details.
+
+Request Body:
+{
+  "name": "Updated Name",
+  "description": "Updated description",
+  "status": "IN_PROGRESS",
+  "priority": "MEDIUM",
+  "start_date": "2025-01-01",
+  "end_date": "2025-03-01"
+}
+
+Rules:
+
+- Only Team Lead can update the project
+- Partial updates are supported
+- Only provided fields will be updated
+
+Response:
+{
+  "success": true,
+  "message": "Project updated successfully",
+  "data": { ...project }
+}
+
+---
+
+### Add Project Member
+POST /api/projects/:projectId/add-member
+
+Adds a user to a project using email.
+
+Request Body:
+{
+  "email": "user@example.com"
+}
+
+Rules:
+
+- Only Team Lead can add members
+- Project must exist
+- User must exist
+- User must belong to the same workspace
+- Duplicate members are prevented
+
+Response:
+{
+  "success": true,
+  "message": "Member added successfully",
+  "data": {
+    "userId": "user_id"
+  }
+}
 
 ### Add Workspace Member
 POST /api/workspace/add-member
