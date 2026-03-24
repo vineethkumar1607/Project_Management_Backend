@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from "../config/prisma.js";
 import { getWorkspaceWithMembers } from "./workspaceService.js";
 import { hasPermission } from "../controllers/ProjectController.js";
 import { ROLES } from "../controllers/ProjectController.js";
