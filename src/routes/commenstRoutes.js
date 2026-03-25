@@ -1,15 +1,17 @@
-
-//commentsroutes.js
 import express from "express";
+import { addTaskCommentController, getTaskCommentsController } from "../controllers/commentController.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { getTaskComments } from "../controllers/ProjectController.js";
 
-const commentsRouter = express.Router();
+const router = express.Router();
 
-/*
-Route: GET /task/:taskId/comments
-Purpose: Fetch comments belonging to a task
-*/
-commentsRouter.get("/task/:taskId/comments", authMiddleware, getTaskComments);
+// Create comment
+router.post(
+    "/tasks/:taskId/comments", authMiddleware, addTaskCommentController
+);
 
-export default commentsRouter;
+// Get comments with pagination
+router.get(
+    "/tasks/:taskId/comments", authMiddleware, getTaskCommentsController
+);
+
+export default router;

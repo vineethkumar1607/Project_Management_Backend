@@ -11,6 +11,7 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/tasksRoutes.js";
 import commentRoutes from "./routes/commenstRoutes.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 // environment variables
 dotenv.config();
@@ -88,7 +89,9 @@ app.use("/api/tasks", taskRoutes);
 
 // Mount comment-related routes
 // GET /api/task/:taskId/comments
-app.use("/api/comments", commentRoutes);
+app.use("/api", commentRoutes);
+
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 5000;
