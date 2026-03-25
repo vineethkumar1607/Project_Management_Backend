@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { createProjectService, updateProjectService } from "../services/projectService.js";
+import { createError } from "../utils/error.js";
 
 const prisma = new PrismaClient();
 
@@ -25,9 +26,9 @@ export const ROLES = {
 };
 
 
-export const createProject = async (req, res) => {
+export const createProject = async (req, res, next) => {
     try {
-        const { userId } = await req.auth();
+        const userId = req.userId;
 
         const project = await createProjectService(userId, req.body);
 
@@ -52,17 +53,14 @@ export const createProject = async (req, res) => {
             data: formattedProject,
         });
     } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Internal Server Error",
-        });
+        return next(error);
     }
 };
 
 
-export const updateProject = async (req, res) => {
+export const updateProject = async (req, res, next) => {
     try {
-        const { userId } = await req.auth();
+        const userId = req.userId;
         const { projectId } = req.params;
 
         const project = await updateProjectService(
@@ -77,14 +75,11 @@ export const updateProject = async (req, res) => {
             data: project,
         });
     } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Internal Server Error",
-        });
+        return next(error);
     }
 };
 
-export const getWorkspaceProjects = async (req, res) => {
+export const getWorkspaceProjects = async (req, res, next) => {
     try {
         const { workspaceId } = req.params;
         const userId = req.userId;
@@ -98,27 +93,20 @@ export const getWorkspaceProjects = async (req, res) => {
         });
 
         if (!member) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
+            return next(createError(403, "Access denied"));
         }
 
         const projects = await prisma.project.findMany({
             where: { workspaceId }
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: projects
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch projects"
-        });
+        return next(error);
     }
 };
 
@@ -132,7 +120,7 @@ Includes:
 
 This is used when viewing a project board.
 */
-export const getProjectTasks = async (req, res) => {
+export const getProjectTasks = async (req, res, next) => {
     try {
         const { projectId } = req.params;
         const userId = req.userId;
@@ -143,10 +131,7 @@ export const getProjectTasks = async (req, res) => {
         });
 
         if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found"
-            });
+            return next(createError(404, "Project not found"));
         }
 
         // check workspace access
@@ -158,10 +143,7 @@ export const getProjectTasks = async (req, res) => {
         });
 
         if (!member) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
+            return next(createError(403, "Access denied"));
         }
 
         // fetch tasks
@@ -173,17 +155,13 @@ export const getProjectTasks = async (req, res) => {
             }
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: tasks
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch tasks"
-        });
+        return next(error);
     }
 };
 
@@ -193,7 +171,7 @@ Fetch all comments for a specific task.
 
 Each comment includes the user who wrote it.
 */
-export const getTaskComments = async (req, res) => {
+export const getTaskComments = async (req, res, next) => {
     try {
         const { taskId } = req.params;
         const userId = req.userId;
@@ -207,10 +185,7 @@ export const getTaskComments = async (req, res) => {
         });
 
         if (!task) {
-            return res.status(404).json({
-                success: false,
-                message: "Task not found"
-            });
+            return next(createError(404, "Task not found"));
         }
 
         // Check if user belongs to workspace
@@ -222,10 +197,7 @@ export const getTaskComments = async (req, res) => {
         });
 
         if (!member) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
+            return next(createError(403, "Access denied"));
         }
 
         //  Fetch comments
@@ -236,16 +208,12 @@ export const getTaskComments = async (req, res) => {
             }
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: comments
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch comments"
-        });
+        return next(error);
     }
 };

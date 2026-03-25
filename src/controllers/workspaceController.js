@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js"
+import { createError } from "../utils/error.js";
 /*
 
 workspacecontroller.js
@@ -8,18 +9,11 @@ Fetch all workspaces that the logged-in user belongs to.
 This is used to populate the workspace switcher
 in the sidebar or dropdown in the frontend.
 */
-export const getUserWorkspaces = async (req, res) => {
+export const getUserWorkspaces = async (req, res, next) => {
     try {
 
         // Clerk authentication middleware provides the authenticated user
-        const { userId } = await req.auth();
-
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized",
-            });
-        }
+        const userId = req.userId;
         /*
         Query the WorkspaceMember table to find all workspace
         memberships for the current user.
@@ -50,18 +44,13 @@ export const getUserWorkspaces = async (req, res) => {
         }));
 
         // Return the list of workspaces to the client
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: formattedWorkspaces
         });
 
     } catch (error) {
-        console.error("GET WORKSPACES ERROR:", error);
-        // Handle unexpected server errors
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch workspaces"
-        })
+        return next(error);
 
     }
 }
@@ -74,7 +63,7 @@ Used in features like:
 - Workspace member list
 
 */
-export const getWorkspaceMembers = async (req, res) => {
+export const getWorkspaceMembers = async (req, res, next) => {
     try {
         const { workspaceId } = req.params;
         const userId = req.userId;
@@ -88,10 +77,7 @@ export const getWorkspaceMembers = async (req, res) => {
         });
 
         if (!member) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
+            return next(createError(403, "Access denied"));
         }
 
         // Fetch members
@@ -102,16 +88,12 @@ export const getWorkspaceMembers = async (req, res) => {
             }
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: members
         });
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch workspace members"
-        });
+        return next(error);
     }
 };

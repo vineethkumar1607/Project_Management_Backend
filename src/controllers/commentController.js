@@ -7,13 +7,8 @@ import { createError } from "../utils/error.js";
 
 export const addTaskCommentController = async (req, res, next) => {
     try {
-        const userId = req.auth?.userId;
+        const userId = req.userId;
         const { taskId, message } = req.body;
-
-        // Authentication check
-        if (!userId) {
-            return next(createError(401, "Unauthorized"));
-        }
 
         // Basic input validation
         if (!taskId || !message) {
@@ -28,20 +23,15 @@ export const addTaskCommentController = async (req, res, next) => {
             data: comment,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
 export const getTaskCommentsController = async (req, res, next) => {
     try {
-        const userId = req.auth?.userId;
+        const userId = req.userId;
         const { taskId } = req.params;
         const { cursor, limit = 10 } = req.query;
-
-        // Authentication check
-        if (!userId) {
-            return next(createError(401, "Unauthorized"));
-        }
 
         // Validate taskId
         if (!taskId) {
@@ -67,6 +57,6 @@ export const getTaskCommentsController = async (req, res, next) => {
             data: comments,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };

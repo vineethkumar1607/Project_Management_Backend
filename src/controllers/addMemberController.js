@@ -1,5 +1,7 @@
 
 import {addProjectMemberService} from "../services/addMembersServices.js"
+import prisma from "../config/prisma.js";
+import { createError } from "../utils/error.js";
 /*
 addworkspacecontroller.js
 Adds an existing user to a workspace as a member.
@@ -10,32 +12,20 @@ creates a WorkspaceMember record.
 
 */
 
-export const addWorkspaceMember = async (req, res) => {
+export const addWorkspaceMember = async (req, res, next) => {
     try {
         const userId = req.userId;
 
         const { email, role, workspaceId, message } = req.body;
 
         // Validation
-        const errors = {};
-
-        if (!email) errors.email = "Email is required";
-        if (!workspaceId) errors.workspaceId = "Workspace ID is required";
-        if (!role) errors.role = "Role is required";
-
-        if (Object.keys(errors).length > 0) {
-            return res.status(400).json({
-                success: false,
-                errors
-            });
+        if (!email || !workspaceId || !role) {
+            return next(createError(400, "Email, workspace ID, and role are required"));
         }
 
         const allowedRoles = ["ADMIN", "MEMBER"];
         if (!allowedRoles.includes(role)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid role"
-            });
+            return next(createError(400, "Invalid role"));
         }
 
         const normalizedEmail = email.toLowerCase();
@@ -49,10 +39,7 @@ export const addWorkspaceMember = async (req, res) => {
         });
 
         if (!adminCheck || adminCheck.role !== "ADMIN") {
-            return res.status(403).json({
-                success: false,
-                message: "Only admins can add members"
-            });
+            return next(createError(403, "Only admins can add members"));
         }
 
         // Find user
@@ -61,10 +48,7 @@ export const addWorkspaceMember = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return next(createError(404, "User not found"));
         }
 
         // Prevent duplicate
@@ -76,10 +60,7 @@ export const addWorkspaceMember = async (req, res) => {
         });
 
         if (existingMember) {
-            return res.status(400).json({
-                success: false,
-                message: "User is already a member"
-            });
+            return next(createError(400, "User is already a member"));
         }
 
         // Create member
@@ -99,20 +80,15 @@ export const addWorkspaceMember = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Add member error:", error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to add workspace member"
-        });
+        return next(error);
     }
 };
 
 
 
-export const addProjectMember = async (req, res) => {
+export const addProjectMember = async (req, res, next) => {
     try {
-        const { userId } = await req.auth();
+        const userId = req.userId;
         const { projectId } = req.params;
         const { email } = req.body;
 
@@ -129,9 +105,6 @@ export const addProjectMember = async (req, res) => {
         });
 
     } catch (error) {
-        return res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Internal Server Error"
-        });
+        return next(error);
     }
 };

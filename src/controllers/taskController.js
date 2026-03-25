@@ -3,7 +3,7 @@ import { createTaskService, deleteTasksService, updateTaskService } from "../ser
 
 export const createTaskController = async (req, res, next) => {
     try {
-        const userId = req.auth.userId;
+        const userId = req.userId;
 
         const payload = {
             ...req.body,
@@ -18,7 +18,7 @@ export const createTaskController = async (req, res, next) => {
             data: task,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -26,7 +26,7 @@ export const createTaskController = async (req, res, next) => {
 export const updateTaskController = async (req, res, next) => {
     try {
         // Extract logged-in user ID from Clerk
-        const userId = req.auth.userId;
+        const userId = req.userId;
 
         // Get task ID from URL params
         const { taskId } = req.params;
@@ -45,7 +45,7 @@ export const updateTaskController = async (req, res, next) => {
             data: updatedTask,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
 
@@ -56,7 +56,7 @@ export const updateTaskController = async (req, res, next) => {
 export const deleteTaskController = async (req, res, next) => {
     try {
         // Extract logged-in user ID
-        const userId = req.auth.userId;
+        const userId = req.userId;
 
         // Get task ID from params
         const { taskId } = req.params;
@@ -70,6 +70,6 @@ export const deleteTaskController = async (req, res, next) => {
             message: result.message,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 };
