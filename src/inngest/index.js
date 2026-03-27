@@ -8,6 +8,7 @@
  * we collect them here and export them as one array.
  */
 
+import { sendTaskCreatedEmail, sendTaskDueReminderEmail } from "./sendTaskEmail.js";
 import { userCreation, userUpdation, userDeletion } from "./users.js";
 import { workspaceCreation, workspaceDeleted, workspaceMemberCreated, workspaceUpdated } from "./workspace.js";
 
@@ -18,6 +19,9 @@ export const functions = [
   workspaceCreation,
   workspaceMemberCreated,
   workspaceDeleted,
-  workspaceUpdated
+  workspaceUpdated,
+  sendTaskCreatedEmail,
+  sendTaskDueReminderEmail
+  
 
 ];
