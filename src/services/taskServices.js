@@ -76,6 +76,19 @@ export const createTaskService = async (userId, payload) => {
         },
     });
 
+    /*
+   Trigger event after successful task creation
+
+   - Service = business logic layer
+   - Ensures event only fires when DB write succeeds
+ */
+    await inngest.send({
+        name: "task/created",
+        data: {
+            taskId: task.id,
+            origin: payload.origin, // pass from controller
+        },
+    });
     return task;
 };
 

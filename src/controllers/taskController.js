@@ -8,6 +8,7 @@ export const createTaskController = async (req, res, next) => {
         const payload = {
             ...req.body,
             projectId: req.params.projectId,
+            origin: req.headers.origin,
         };
 
         const task = await createTaskService(userId, payload);

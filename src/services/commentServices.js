@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma.js";
+import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
 
 export const addTaskCommentService = async (userId, taskId, message) => {

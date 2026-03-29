@@ -269,6 +269,71 @@ Error:
   "message": "Error message"
 }
 
+  ### Task Email Notification System
+
+The application includes an event-driven email notification system for task lifecycle events.
+
+#### Features
+
+- Sends email when a task is assigned to a user
+- Sends reminder email on task due date
+- Uses Inngest for background job processing
+- Implements delayed execution using `step.sleepUntil`
+- Revalidates task state before sending reminder emails
+- Uses Nodemailer with Brevo SMTP for email delivery
+- Includes retry mechanism via Inngest
+- Structured HTML email templates with CTA (View Task)
+
+#### Email Workflows
+
+**1. Task Assignment Email**
+
+- Triggered on: `task/created`
+- Sent immediately after task creation
+- Includes:
+  - Task name
+  - Description
+  - Project name
+  - Due date
+  - "View Task" button
+
+
+**2. Due Date Reminder Email**
+
+- Triggered on: `task/created`
+- Uses delayed execution until due date
+- Sent only if task is not completed
+- Re-fetches task from DB before sending
+
+Frontend → API (create task)
+        ↓
+Controller
+        ↓
+Service (DB write)
+        ↓
+Inngest.send()  🔥
+        ↓
+Event: task/created
+        ↓
+Inngest Function runs
+        ↓
+Email sent
+
+
+#### Architecture
+text
+Task Created
+   ↓
+Inngest Event (task/created)
+   ↓
+├── Assignment Email Function
+│     → sends email immediately
+│
+└── Reminder Function
+      → waits until due date
+      → checks task status
+      → sends reminder if not completed
+
 # Database Design
 The schema is designed for a **multi-workspace project management platform**.
 
