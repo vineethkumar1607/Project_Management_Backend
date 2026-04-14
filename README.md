@@ -209,10 +209,27 @@ Response:
   "data": { ... }
 }
 
+### Get Workspace Members
+GET /api/workspace/:workspaceId/members
+
+Fetch all members belonging to a workspace.
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": "user_id",
+      "email": "user@example.com",
+      "name": "User Name"
+    }
+  ]
+}
+
 ## Project APIs
 
 ### Get Workspace Projects
-GET /api/projects/workspace/:workspaceId/projects
+GET /api/workspace/:workspaceId/projects
 
 Fetch all projects within a workspace.
 
@@ -222,6 +239,25 @@ Response:
   "data": [ ...projects ]
 }
 
+
+### Project Creation Flow (Important)
+
+Frontend sends:
+- name
+- description
+- team_lead (email)
+- team_members (emails)
+
+Backend:
+1. Validates workspace access
+2. Converts emails → user IDs
+3. Filters valid workspace members
+4. Creates project with relations
+
+This ensures:
+- Data integrity
+- Secure access control
+- No invalid users added
 ## Task APIs
 
 ### Get Project Tasks
@@ -318,6 +354,24 @@ Event: task/created
 Inngest Function runs
         ↓
 Email sent
+
+# Error Handling
+
+The backend uses a centralized error handler.
+
+Common Errors:
+
+- 403 → Access denied (user not part of workspace)
+- 404 → Resource not found (workspace/project/user)
+- 500 → Internal server error
+
+All errors follow structure:
+
+{
+  "success": false,
+  "message": "Error message"
+}
+
 
 
 #### Architecture
@@ -443,7 +497,7 @@ Response:
 ---
 
 ### Create Project
-POST /api/projects
+POST /api/workspace/:workspaceId/projects
 
 Creates a new project inside a workspace.
 
@@ -472,6 +526,12 @@ Response:
   "message": "Project created successfully",
   "data": { ...project }
 }
+
+Important:
+
+- team_lead must be a valid user email
+- team_members must be an array of user emails
+- Emails are mapped to user IDs internally using Prisma
 
 ---
 
