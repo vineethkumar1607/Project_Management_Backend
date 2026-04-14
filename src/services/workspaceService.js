@@ -4,8 +4,12 @@ export const getWorkspaceWithMembers = async (workspaceId) => {
     const workspace = await prisma.workspace.findUnique({
         where: { id: workspaceId },
         include: {
-            members: true,
-        },
+            members: {
+                include: {
+                    user: true,
+                },
+            },
+        }
     });
 
     if (!workspace) {

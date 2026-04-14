@@ -50,8 +50,9 @@ export const createProjectService = async (userId, payload) => {
     // From workspace members, pick only those users whose emails were provided
     // This ensures only valid workspace members are added to the project
     const membersToAdd = workspace.members
-        .filter((member) => emailSet.has(member.user.email))
+        .filter((member) => member.user && emailSet.has(member.user.email))
         .map((member) => member.user.id);
+    console.log("WORKSPACE MEMBERS:", workspace.members);
 
     // Create the project along with associated members
     return await prisma.project.create({

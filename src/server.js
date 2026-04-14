@@ -81,7 +81,7 @@ app.use("/api/workspace", workspaceRoutes);
 
 // Mount project-related routes
 // GET /api/workspace/:workspaceId/projects
-app.use("/api/projects", projectRoutes);
+app.use("/api/workspace", projectRoutes);
 
 // Mount task-related routes
 // GET /api/project/:projectId/tasks

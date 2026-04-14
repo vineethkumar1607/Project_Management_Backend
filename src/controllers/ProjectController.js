@@ -29,8 +29,13 @@ export const ROLES = {
 export const createProject = async (req, res, next) => {
     try {
         const userId = req.userId;
+        const { workspaceId } = req.params;
 
-        const project = await createProjectService(userId, req.body);
+        console.log("REQ BODY:", req.body);
+        const project = await createProjectService(userId, {
+            ...req.body,
+            workspaceId,
+        });
 
         const formattedProject = {
             id: project.id,

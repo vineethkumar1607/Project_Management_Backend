@@ -88,9 +88,15 @@ export const getWorkspaceMembers = async (req, res, next) => {
             }
         });
 
+        const formattedMembers = members.map((m) => ({
+            id: m.user.id,
+            email: m.user.email,
+            name: m.user.name,
+        }));
+
         return res.status(200).json({
             success: true,
-            data: members
+            data: formattedMembers
         });
 
     } catch (error) {
