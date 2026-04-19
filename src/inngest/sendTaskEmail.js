@@ -1,6 +1,7 @@
 import { inngest } from "./client.js";
 import prisma from "../config/prisma.js";
 import { sendEmail } from "../utils/email.js";
+import { buildFrontendUrl } from "../config/frontendUrl.js";
 
 /*
   Inngest function responsible for notifying the assigned user
@@ -50,8 +51,19 @@ export const sendTaskCreatedEmail = inngest.createFunction(
       Build frontend URL for navigation from email.
       Falls back to environment variable if origin is not provided.
     */
-    const baseUrl = origin || process.env.FRONTEND_URL;
-    const taskUrl = `${baseUrl}/task/${task.id}`;
+    let resolvedOrigin = null;
+
+    if (origin) {
+      try {
+        resolvedOrigin = new URL(origin).origin;
+      } catch {
+        console.error("[URL config] Invalid event origin:", origin);
+      }
+    }
+
+    const taskUrl = resolvedOrigin
+      ? new URL(`/tasks/${task.id}`, resolvedOrigin).toString()
+      : buildFrontendUrl(`/tasks/${task.id}`);
 
     /*
       Format due date for human-readable display.
@@ -218,8 +230,19 @@ export const sendTaskDueReminderEmail = inngest.createFunction(
     /*
       Generate frontend URL
     */
-    const baseUrl = origin || process.env.FRONTEND_URL;
-    const taskUrl = `${baseUrl}/task/${latestTask.id}`;
+    let resolvedOrigin = null;
+
+    if (origin) {
+      try {
+        resolvedOrigin = new URL(origin).origin;
+      } catch {
+        console.error("[URL config] Invalid event origin:", origin);
+      }
+    }
+
+    const taskUrl = resolvedOrigin
+      ? new URL(`/tasks/${latestTask.id}`, resolvedOrigin).toString()
+      : buildFrontendUrl(`/tasks/${latestTask.id}`);
 
     /*
       Format due date for display
