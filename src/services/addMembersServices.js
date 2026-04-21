@@ -64,15 +64,18 @@ export const addProjectMemberService = async (userId, projectId, email) => {
     }
 
     // Add member
-    await prisma.projectMember.create({
+    const newMember = await prisma.projectMember.create({
         data: {
             userId: memberId,
             projectId
+        },
+        include: {
+            user: true
         }
     });
-
     return {
         message: "Member added successfully",
-        userId: memberId
+        projectId,
+        newMember
     };
 };

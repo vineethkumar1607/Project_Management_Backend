@@ -103,7 +103,14 @@ export const getWorkspaceProjects = async (req, res, next) => {
         }
 
         const projects = await prisma.project.findMany({
-            where: { workspaceId }
+            where: { workspaceId },
+            include: {
+                members: {
+                    include: {
+                        user: true
+                    }
+                }
+            }
         });
 
         return res.status(200).json({
