@@ -2,7 +2,7 @@
 
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { createProject, getWorkspaceProjects } from "../controllers/ProjectController.js";
+import { createProject, getWorkspaceProjects, updateProject } from "../controllers/ProjectController.js";
 import { addProjectMember } from "../controllers/addMemberController.js";
 
 const projectRouter = express.Router();
@@ -14,5 +14,7 @@ Purpose: Fetch all projects belonging to a workspace
 projectRouter.get("/:workspaceId/projects", authMiddleware, getWorkspaceProjects);
 projectRouter.post("/:workspaceId/projects", authMiddleware, createProject);
 projectRouter.post("/:projectId/add-member", authMiddleware, addProjectMember);
+projectRouter.patch("/:projectId", authMiddleware, updateProject);
+projectRouter.put("/:projectId", authMiddleware, updateProject);
 
 export default projectRouter;

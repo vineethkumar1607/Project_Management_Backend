@@ -113,18 +113,30 @@ export const updateProjectService = async (userId, projectId, payload) => {
         throw createError("Only team lead can update this project", 403);
     }
 
+// ENUM VALIDATION
+    const validStatus = ["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"];
+    const validPriority = ["LOW", "MEDIUM", "HIGH"];
+
+    if (status && !validStatus.includes(status)) {
+        throw createError("Invalid status value", 400);
+    }
+
+    if (priority && !validPriority.includes(priority)) {
+        throw createError("Invalid priority value", 400);
+    }
+
     // Update only the fields that are provided in the payload
     // Undefined fields will not be modified in the database
     return await prisma.project.update({
         where: { id: projectId },
         data: {
-            ...(name && { name }),
-            ...(description && { description }),
-            ...(status && { status }),
-            ...(priority && { priority }),
+            ...(name !== undefined && { name }),
+            ...(description !== undefined && { description }),
+            ...(status !== undefined && { status }),
+            ...(priority !== undefined && { priority }),
             ...(progress !== undefined && { progress }),
-            ...(start_date && { start_date: parseDate(start_date) }),
-            ...(end_date && { end_date: parseDate(end_date) }),
+            ...(start_date !== undefined && { start_date: parseDate(start_date) }),
+            ...(end_date !== undefined && { end_date: parseDate(end_date) }),
         },
         include: {
             members: { include: { user: true } },

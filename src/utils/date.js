@@ -1,3 +1,9 @@
 export const parseDate = (date) => {
-    return date ? new Date(date) : undefined;
+    const parsed = new Date(date);
+
+    if (isNaN(parsed.getTime())) {
+        throw createError("Invalid date format", 400);
+    }
+
+    return parsed;
 };

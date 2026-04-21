@@ -9,7 +9,7 @@ import { createError } from "../utils/error.js";
 
 export const authMiddleware = async (req, res, next) => {
     try {
-
+        console.log("AUTH MIDDLEWARE HIT");
         // Get authentication info from Clerk
         const { userId } = await req.auth();
 

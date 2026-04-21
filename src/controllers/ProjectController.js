@@ -65,6 +65,7 @@ export const createProject = async (req, res, next) => {
 
 export const updateProject = async (req, res, next) => {
     try {
+        console.log("UPDATE CONTROLLER HIT");
         const userId = req.userId;
         const { projectId } = req.params;
 
