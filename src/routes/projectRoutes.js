@@ -3,7 +3,7 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 import { createProject, getWorkspaceProjects, updateProject } from "../controllers/ProjectController.js";
-import { addProjectMember } from "../controllers/addMemberController.js";
+import { removeProjectMember, addProjectMember } from "../controllers/memberController.js";
 
 const projectRouter = express.Router();
 
@@ -16,5 +16,11 @@ projectRouter.post("/:workspaceId/projects", authMiddleware, createProject);
 projectRouter.post("/:projectId/add-member", authMiddleware, addProjectMember);
 projectRouter.patch("/:projectId", authMiddleware, updateProject);
 projectRouter.put("/:projectId", authMiddleware, updateProject);
+// REMOVE MEMBER
+projectRouter.delete(
+  "/:projectId/member/:memberId",
+  authMiddleware,
+  removeProjectMember
+);
 
 export default projectRouter;

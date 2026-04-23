@@ -1,6 +1,6 @@
 import express from "express";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
-import { addWorkspaceMember } from "../controllers/addMemberController.js";
+import { addWorkspaceMember } from "../controllers/memberController.js";
 import {
     getUserWorkspaces,
     getWorkspaceMembers,

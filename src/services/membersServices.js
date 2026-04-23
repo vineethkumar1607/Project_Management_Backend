@@ -79,3 +79,71 @@ export const addProjectMemberService = async (userId, projectId, email) => {
         newMember
     };
 };
+
+
+export const removeProjectMemberService = async (
+  userId,
+  projectId,
+  memberId
+) => {
+  // Check project access (user must belong to workspace)
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      workspace: {
+        members: {
+          some: { userId },
+        },
+      },
+    },
+  });
+
+  if (!project) {
+    throw createError("Project not found or access denied", 404);
+  }
+
+  // Only team lead can remove
+  if (project.team_lead !== userId) {
+    throw createError("Only team lead can remove members", 403);
+  }
+
+  // Prevent removing team lead
+  if (project.team_lead === memberId) {
+    throw createError("Team lead cannot be removed", 400);
+  }
+
+  // Check if member exists in project
+  const existingMember = await prisma.projectMember.findUnique({
+    where: {
+      userId_projectId: {
+        userId: memberId,
+        projectId,
+      },
+    },
+  });
+
+  // Idempotent behavior
+  if (!existingMember) {
+    return {
+      message: "Member already removed",
+      projectId,
+      memberId,
+    };
+  }
+
+  // Delete member
+  await prisma.projectMember.delete({
+    where: {
+      userId_projectId: {
+        userId: memberId,
+        projectId,
+      },
+    },
+  });
+
+  return {
+    message: "Member removed successfully",
+    projectId,
+    memberId,
+  };
+};
