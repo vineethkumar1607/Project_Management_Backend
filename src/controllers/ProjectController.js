@@ -48,7 +48,11 @@ export const createProject = async (req, res, next) => {
             team_lead: project.team_lead,
             members: project.members.map(m => ({
                 id: m.user.id,
-                email: m.user.email,
+                user: {
+                    id: m.user.id,
+                    name: m.user.name,
+                    email: m.user.email,
+                }
             }))
         };
 

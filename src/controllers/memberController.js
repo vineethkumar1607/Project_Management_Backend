@@ -1,15 +1,14 @@
 
-import {addProjectMemberService} from "../services/addMembersServices.js"
+import { addProjectMemberService, removeProjectMemberService } from "../services/membersServices.js"
 import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
 /*
-addworkspacecontroller.js
+
 Adds an existing user to a workspace as a member.
 
 Typical flow:
-Workspace admin invites a user by email → backend verifies user →
-creates a WorkspaceMember record.
-
+Workspace admin invites a user by email → backend verifies user → creates a WorkspaceMember record.
+ 
 */
 
 export const addWorkspaceMember = async (req, res, next) => {
@@ -104,6 +103,30 @@ export const addProjectMember = async (req, res, next) => {
             data: result
         });
 
+    } catch (error) {
+        return next(error);
+    }
+};
+
+
+
+
+export const removeProjectMember = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const { projectId, memberId } = req.params;
+
+        const result = await removeProjectMemberService(
+            userId,
+            projectId,
+            memberId
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+            data: result,
+        });
     } catch (error) {
         return next(error);
     }
