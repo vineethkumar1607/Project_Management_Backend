@@ -92,6 +92,7 @@ export const getWorkspaceMembers = async (req, res, next) => {
             id: m.user.id,
             email: m.user.email,
             name: m.user.name,
+            role: m.role,
         }));
 
         return res.status(200).json({
