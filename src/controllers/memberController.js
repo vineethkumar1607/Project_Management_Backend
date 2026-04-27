@@ -84,7 +84,7 @@ export const addWorkspaceMember = async (req, res, next) => {
 };
 
 
-
+// Controller to add a member to a project. Only team leads can perform this action.
 export const addProjectMember = async (req, res, next) => {
     try {
         const userId = req.userId;
@@ -110,7 +110,7 @@ export const addProjectMember = async (req, res, next) => {
 
 
 
-
+// Controller to remove a member from a project. Only team leads can perform this action.
 export const removeProjectMember = async (req, res, next) => {
     try {
         const userId = req.userId;
@@ -129,5 +129,24 @@ export const removeProjectMember = async (req, res, next) => {
         });
     } catch (error) {
         return next(error);
+    }
+};
+
+
+// Controller to get project members with user details
+export const getProjectMembers = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const { projectId } = req.params;
+
+        const members = await getProjectMembersService(userId, projectId);
+
+        return res.status(200).json({
+            success: true,
+            data: members
+        });
+
+    } catch (error) {
+        next(error);
     }
 };
