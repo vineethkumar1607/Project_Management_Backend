@@ -1,6 +1,7 @@
 import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
 import { parseDate } from "../utils/date.js";
+import { inngest } from "../inngest/client.js";
 
 export const createTaskService = async (userId, payload) => {
     const {
@@ -14,6 +15,8 @@ export const createTaskService = async (userId, payload) => {
         due_date,
     } = payload;
 
+    console.log("payload", payload);
+
     // Validate required fields
     if (!projectId) {
         throw createError("Project ID is required", 400);
@@ -24,7 +27,7 @@ export const createTaskService = async (userId, payload) => {
     }
 
     if (!assigneeId) {
-        throw createError("Assignee is required", 400);
+        throw createError(400, "Assignee is not part of this project");
     }
 
     // Parse due date
@@ -44,6 +47,9 @@ export const createTaskService = async (userId, payload) => {
     if (!project) {
         throw createError("Project not found", 404);
     }
+
+    console.log("PROJECT MEMBERS:", project.members);
+    console.log("ASSIGNEE ID:", assigneeId);
 
     // Check team lead
     if (project.team_lead !== userId) {
