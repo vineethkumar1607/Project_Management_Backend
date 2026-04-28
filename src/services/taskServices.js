@@ -98,7 +98,7 @@ export const createTaskService = async (userId, payload) => {
     return task;
 };
 
-// Update Task Service
+// Update Task Service - for updating a single task by ID, ensuring only team lead can update and that due date is valid if provided
 
 export const updateTaskService = async (userId, taskId, payload) => {
     const {
@@ -161,7 +161,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
 };
 
 
-// Delete Task Service
+// Delete Task Service - for deleting one or more tasks by their IDs, ensuring they belong to the same project and that the user is authorized to delete them
 
 export const deleteTasksService = async (userId, taskIds) => {
     // Validate input
@@ -192,7 +192,7 @@ export const deleteTasksService = async (userId, taskIds) => {
         throw createError("All tasks must belong to same project", 400);
     }
 
-    // 5️⃣ Fetch project (only needed fields)
+    //  Fetch project (only needed fields)
     const project = await prisma.project.findUnique({
         where: { id: projectId },
         select: { team_lead: true },
@@ -217,4 +217,41 @@ export const deleteTasksService = async (userId, taskIds) => {
     return {
         message: `${result.count} tasks deleted successfully`,
     };
+};
+
+// Get Task by ID Service - for fetching a single task's details, ensuring user has access to the project it belongs to 
+export const getTaskByIdService = async (taskId, userId) => {
+    const task = await prisma.task.findFirst({
+        where: {
+            id: taskId,
+            project: {
+                members: {
+                    some: { userId },
+                },
+            },
+        },
+        include: {
+            assignee: {
+                select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                },
+            },
+            project: {
+                select: {
+                    id: true,
+                    name: true,
+                    status: true,
+                    priority: true,
+                },
+            },
+        },
+    });
+
+    if (!task) {
+        throw createError(404, "Task not found or unauthorized");
+    }
+
+    return task;
 };
