@@ -8,13 +8,15 @@ import { createError } from "../utils/error.js";
 export const addTaskCommentController = async (req, res, next) => {
     try {
         const userId = req.userId;
-        const { taskId, message } = req.body;
+        const { taskId } = req.params;
+        const { message } = req.body;
 
         // Basic input validation
-        if (!taskId || !message) {
-            return next(createError(400, "taskId and message are required"));
-        }
 
+        if (!message || message.trim().length === 0) {
+            return next(createError(400, "message cannot be empty"));
+        }
+        
         const comment = await addTaskCommentService(userId, taskId, message);
 
         return res.status(201).json({

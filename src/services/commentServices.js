@@ -82,8 +82,8 @@ export const getTaskCommentsService = async ({
             taskId,
         },
         orderBy: [
-            { createdAt: "desc" },
-            { id: "desc" }, // stable ordering
+            { createdAt: "asc" },
+            { id: "asc" },
         ],
         take: safeLimit + 1,
         ...(cursor && {
