@@ -16,6 +16,7 @@ taskRouter.post("/project/:projectId/tasks", authMiddleware, createTasksControll
 
 // UPDATE task
 taskRouter.patch("/:taskId", authMiddleware, updateTaskController);
+taskRouter.put("/:taskId", authMiddleware, updateTaskController);
 
 // DELETE task
 taskRouter.delete("/:taskId", authMiddleware, deleteTaskController);
