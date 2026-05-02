@@ -163,13 +163,24 @@ export const getProjectTasks = async (req, res, next) => {
             return next(createError(403, "Access denied"));
         }
 
-        // fetch tasks
+        // fetch tasks with assignee and comments for the project 
         const tasks = await prisma.task.findMany({
             where: { projectId },
             include: {
-                assignee: true,
-                comments: true
-            }
+                assignee: {
+                    select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                    },
+                },
+                project: {
+                    select: {
+                        team_lead: true,
+                    },
+                },
+                comments: true,
+            },
         });
 
         return res.status(200).json({

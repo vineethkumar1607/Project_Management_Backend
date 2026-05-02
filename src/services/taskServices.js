@@ -108,6 +108,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
         status,
         priority,
         due_date,
+        assigneeId,
     } = payload;
 
     //Check if task exists
@@ -127,8 +128,11 @@ export const updateTaskService = async (userId, taskId, payload) => {
     }
 
     // Check if user is team lead
-    if (task.project.team_lead !== userId) {
-        throw createError("Only Team Lead can update tasks", 403);
+    const isTeamLead = task.project.team_lead === userId;
+    const isAssignee = task.assigneeId === userId;
+
+    if (!isTeamLead && !isAssignee) {
+        throw createError("Unauthorized to update this task", 403);
     }
 
     //  Parse due date if provided
