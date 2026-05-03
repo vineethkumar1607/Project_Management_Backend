@@ -77,6 +77,23 @@ export const deleteTaskController = async (req, res, next) => {
     }
 };
 
+// Bulk Delete Tasks Controller - for deleting multiple tasks by IDs passed in request body as an array of task IDs
+export const deleteTaskControllerBulk = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const { taskIds } = req.body;
+
+        const result = await deleteTasksService(userId, taskIds);
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
+        });
+    } catch (error) {
+        return next(error);
+    }
+};
+
 // Get Task by ID Controller - for fetching a single task's details
 
 export const getTaskByIdController = async (req, res, next) => {
