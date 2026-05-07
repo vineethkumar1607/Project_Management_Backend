@@ -11,8 +11,10 @@ import { buildFrontendUrl } from "../config/frontendUrl.js";
   and avoids trusting event payloads for critical data such as assignee.
 */
 export const sendTaskCreatedEmail = inngest.createFunction(
-  { id: "send-task-created-email" },
-  { event: "task/created" },
+  {
+    id: "send-task-created-email",
+    triggers: [{ event: "task/created" }],
+  },
 
   async ({ event, step }) => {
     const { taskId, origin } = event.data;
@@ -71,10 +73,10 @@ export const sendTaskCreatedEmail = inngest.createFunction(
     */
     const formattedDueDate = task.due_date
       ? new Date(task.due_date).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
       : "No due date";
 
     /*
@@ -155,8 +157,10 @@ export const sendTaskCreatedEmail = inngest.createFunction(
   and ensures the task state is revalidated before sending email.
 */
 export const sendTaskDueReminderEmail = inngest.createFunction(
-  { id: "send-task-due-reminder-email" },
-  { event: "task/created" },
+  {
+    id: "send-task-due-reminder-email",
+    triggers: [{ event: "task/created" }],
+  },
 
   async ({ event, step }) => {
     const { taskId, origin } = event.data;

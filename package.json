@@ -20,7 +20,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "inngest": "^3.49.3",
+    "inngest": "^4.3.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.4",
     "prisma": "^6.17.1",
