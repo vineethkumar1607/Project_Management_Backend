@@ -10,10 +10,12 @@ const prisma = new PrismaClient();
    Event: clerk/user.created
  */
 export const userCreation = inngest.createFunction(
-    { id: "clerk-user-created" },        // unique inngest function id
-    { event: "clerk/user.created" },     // event to listen for
+    {
+        id: "clerk-user-created",
+        triggers: [{ event: "clerk/user.created" }],
+    },
 
-    async ({ event }) => {              // handler
+    async ({ event }) => {           // handler
         const clerkUser = event.data;
 
         /*
@@ -50,8 +52,10 @@ export const userCreation = inngest.createFunction(
    Event: clerk/user.updated
  */
 export const userUpdation = inngest.createFunction(
-    { id: "clerk-user-updated" },
-    { event: "clerk/user.updated" },
+    {
+        id: "clerk-user-updated",
+        triggers: [{ event: "clerk/user.updated" }],
+    },
 
     async ({ event }) => {
         const data = event.data;
@@ -81,8 +85,10 @@ export const userUpdation = inngest.createFunction(
    Event: clerk/user.deleted
  */
 export const userDeletion = inngest.createFunction(
-    { id: "clerk-user-deleted" },
-    { event: "clerk/user.deleted" },
+    {
+        id: "clerk-user-deleted",
+        triggers: [{ event: "clerk/user.deleted" }],
+    },
 
     async ({ event }) => {
         const data = event.data;

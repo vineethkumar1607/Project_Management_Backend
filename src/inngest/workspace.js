@@ -13,11 +13,10 @@ The use of upsert makes the operation idempotent and safe for retries,
 which is important in event-driven systems like Inngest.
 */
 export const workspaceCreation = inngest.createFunction(
-    { id: "workspace-created-from-clerk" },
-
-    // Fired when Clerk emits the organization.created event
-    { event: "clerk/organization.created" },
-
+    {
+        id: "workspace-created-from-clerk",
+        triggers: [{ event: "clerk/organization.created" }],
+    },
 
     async ({ event, step }) => {
 
@@ -102,10 +101,10 @@ Whenever properties like name, slug, or image are modified in Clerk,
 this function keeps the internal workspace record synchronized.
 */
 export const workspaceUpdated = inngest.createFunction(
-    { id: "workspace-updated-from-clerk" },
-
-    // Fired when Clerk emits the organization.updated event
-    { event: "clerk/organization.updated" },
+    {
+        id: "workspace-updated-from-clerk",
+        triggers: [{ event: "clerk/organization.updated" }],
+    },
 
     async ({ event, step }) => {
 
@@ -140,10 +139,10 @@ When an organization is deleted, the corresponding workspace
 is removed from our database as well.
 */
 export const workspaceDeleted = inngest.createFunction(
-    { id: "workspace-deleted-from-clerk" },
-
-    // Fired when Clerk emits the organization.deleted event
-    { event: "clerk/organization.deleted" },
+    {
+        id: "workspace-deleted-from-clerk",
+        triggers: [{ event: "clerk/organization.deleted" }],
+    },
 
     async ({ event, step }) => {
 
@@ -183,10 +182,10 @@ The function is idempotent and retry-safe because it uses upsert with
 a composite unique key (userId + workspaceId).
 */
 export const workspaceMemberCreated = inngest.createFunction(
-    { id: "workspace-member-created-from-clerk" },
-
-    // Triggered when a user joins a Clerk organization
-    { event: "clerk/organizationMembership.created" },
+    {
+        id: "workspace-member-created-from-clerk",
+        triggers: [{ event: "clerk/organizationMembership.created" }],
+    },
 
     async ({ event, step }) => {
 
