@@ -108,13 +108,26 @@ export const getWorkspaceProjects = async (req, res, next) => {
 
         const projects = await prisma.project.findMany({
             where: { workspaceId },
+
             include: {
                 members: {
                     include: {
-                        user: true
-                    }
-                }
-            }
+                        user: true,
+                    },
+                },
+
+                tasks: {
+                    include: {
+                        assignee: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         return res.status(200).json({
