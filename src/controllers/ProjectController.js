@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { createProjectService, updateProjectService } from "../services/projectService.js";
+import { createProjectService, updateProjectService, deleteProjectService } from "../services/projectService.js";
 import { createError } from "../utils/error.js";
 
 const prisma = new PrismaClient();
@@ -199,6 +199,31 @@ export const getProjectTasks = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             data: tasks
+        });
+
+    } catch (error) {
+        return next(error);
+    }
+};
+
+
+
+
+export const deleteProject = async (req, res, next) => {
+
+    try {
+        const userId = req.userId;
+
+        const { projectId } = req.params;
+
+        const result = await deleteProjectService(
+            userId,
+            projectId
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: result.message,
         });
 
     } catch (error) {

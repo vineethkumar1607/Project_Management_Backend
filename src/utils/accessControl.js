@@ -3,6 +3,6 @@ export const validateWorkspaceAccess = (workspace, userId, allowedRoles, hasPerm
     const isAllowed = hasPermission(workspace.members, userId, allowedRoles);
 
     if (!isAllowed) {
-        throw createError("Not authorized", 403);
+        throw createError(403, "Not authorized");
     }
 };

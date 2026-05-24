@@ -19,11 +19,11 @@ export const createTaskService = async (userId, payload) => {
 
     // Validate required fields
     if (!projectId) {
-        throw createError("Project ID is required", 400);
+        throw createError(400, "Project ID is required");
     }
 
     if (!title) {
-        throw createError("Title is required", 400);
+        throw createError(400, "Title is required");
     }
 
     if (!assigneeId) {
@@ -33,7 +33,7 @@ export const createTaskService = async (userId, payload) => {
     // Parse due date
     const parsedDate = parseDate(due_date);
     if (!parsedDate) {
-        throw createError("Valid due date is required", 400);
+        throw createError(400, "Valid due date is required");
     }
 
     // Check project
@@ -45,7 +45,7 @@ export const createTaskService = async (userId, payload) => {
     });
 
     if (!project) {
-        throw createError("Project not found", 404);
+        throw createError(404, "Project not found");
     }
 
     console.log("PROJECT MEMBERS:", project.members);
@@ -53,7 +53,7 @@ export const createTaskService = async (userId, payload) => {
 
     // Check team lead
     if (project.team_lead !== userId) {
-        throw createError("Only Team Lead can create tasks", 403);
+        throw createError(403, "Only Team Lead can create tasks");
     }
 
     // Check assignee
@@ -62,7 +62,7 @@ export const createTaskService = async (userId, payload) => {
     );
 
     if (!isMember) {
-        throw createError("Assignee is not part of this project", 400);
+        throw createError(400, "Assignee is not part of this project");
     }
 
     // Create task
@@ -124,7 +124,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
     });
 
     if (!task) {
-        throw createError("Task not found", 404);
+        throw createError(404, "Task not found");
     }
 
     // Check if user is team lead
@@ -132,7 +132,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
     const isAssignee = task.assigneeId === userId;
 
     if (!isTeamLead && !isAssignee) {
-        throw createError("Unauthorized to update this task", 403);
+        throw createError(403, "Unauthorized to update this task");
     }
 
     //  Parse due date if provided
@@ -140,7 +140,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
     if (due_date) {
         parsedDate = parseDate(due_date);
         if (!parsedDate) {
-            throw createError("Invalid due date", 400);
+            throw createError(400, "Invalid due date");
         }
     }
 
@@ -170,7 +170,7 @@ export const updateTaskService = async (userId, taskId, payload) => {
 export const deleteTasksService = async (userId, taskIds) => {
     // Validate input
     if (!Array.isArray(taskIds) || taskIds.length === 0) {
-        throw createError("taskIds must be a non-empty array", 400);
+        throw createError(400, "taskIds must be a non-empty array");
     }
 
     // Fetch all tasks
@@ -182,7 +182,7 @@ export const deleteTasksService = async (userId, taskIds) => {
 
     // Ensure all tasks exist
     if (tasks.length !== taskIds.length) {
-        throw createError("Some tasks not found", 404);
+        throw createError(404, "Some tasks not found");
     }
 
     // Ensure all tasks belong to same project
@@ -193,7 +193,7 @@ export const deleteTasksService = async (userId, taskIds) => {
     );
 
     if (!isSameProject) {
-        throw createError("All tasks must belong to same project", 400);
+        throw createError(400, "All tasks must belong to same project");
     }
 
     //  Fetch project (only needed fields)
@@ -203,12 +203,12 @@ export const deleteTasksService = async (userId, taskIds) => {
     });
 
     if (!project) {
-        throw createError("Project not found", 404);
+        throw createError(404, "Project not found");
     }
 
     // Authorization check
     if (project.team_lead !== userId) {
-        throw createError("Only Team Lead can delete tasks", 403);
+        throw createError(403, "Only Team Lead can delete tasks");
     }
 
     // Delete all tasks

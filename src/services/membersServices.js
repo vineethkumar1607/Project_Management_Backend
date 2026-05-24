@@ -17,12 +17,30 @@ export const addProjectMemberService = async (userId, projectId, email) => {
   });
 
   if (!project) {
-    throw createError("Project not found or access denied", 404);
+    throw createError(404, "Project not found or access denied");
   }
 
-  // Only team lead can add members
-  if (project.team_lead !== userId) {
-    throw createError("Only team lead can add members", 403);
+  const workspaceMember =
+    await prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId: project.workspaceId,
+        userId,
+      },
+    });
+
+  const isAdmin =
+    workspaceMember?.role === "ADMIN";
+
+  const isTeamLead =
+    project.team_lead === userId;
+
+
+  // Only team lead or workspace admin can add members
+  if (!isAdmin && !isTeamLead) {
+    throw createError(
+      403,
+      "Only admin or team lead can add members"
+    );
   }
 
   // Convert email → userId
@@ -32,21 +50,21 @@ export const addProjectMemberService = async (userId, projectId, email) => {
   });
 
   if (!user) {
-    throw createError("User not found", 404);
+    throw createError(404, "User not found");
   }
 
   const memberId = user.id;
 
   // Check workspace membership
-  const workspaceMember = await prisma.workspaceMember.findFirst({
+  const targetWorkspaceMember  = await prisma.workspaceMember.findFirst({
     where: {
       workspaceId: project.workspaceId,
       userId: memberId
     }
   });
 
-  if (!workspaceMember) {
-    throw createError("User is not part of the workspace", 400);
+  if (!targetWorkspaceMember ) {
+    throw createError(400, "User is not part of the workspace");
   }
 
   // Check already exists
@@ -60,7 +78,7 @@ export const addProjectMemberService = async (userId, projectId, email) => {
   });
 
   if (existingMember) {
-    throw createError("User already in project", 400);
+    throw createError(400, "User already in project");
   }
 
   // Add member
@@ -99,17 +117,27 @@ export const removeProjectMemberService = async (
   });
 
   if (!project) {
-    throw createError("Project not found or access denied", 404);
+    throw createError(404, "Project not found or access denied");
   }
 
-  // Only team lead can remove
-  if (project.team_lead !== userId) {
-    throw createError("Only team lead can remove members", 403);
+  // Only team lead or workspace admin can remove members
+  const workspaceMember = await prisma.workspaceMember.findFirst({
+    where: {
+      workspaceId: project.workspaceId,
+      userId,
+    },
+  });
+
+  const isAdmin = workspaceMember?.role === "ADMIN";
+  const isTeamLead = project.team_lead === userId;
+
+  if (!isAdmin && !isTeamLead) {
+    throw createError(403, "Only team lead or workspace admin can remove members");
   }
 
   // Prevent removing team lead
   if (project.team_lead === memberId) {
-    throw createError("Team lead cannot be removed", 400);
+    throw createError(400, "Team lead cannot be removed");
   }
 
   // Check if member exists in project
