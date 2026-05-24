@@ -25,12 +25,12 @@ export const createProjectService = async (userId, payload) => {
 
     // Ensure the workspace exists
     if (!workspace) {
-        throw createError("Workspace not found", 404);
+        throw createError(404, "Workspace not found");
     }
 
     // Only users with ADMIN role are allowed to create a project
     if (!hasPermission(workspace.members, userId, [ROLES.ADMIN])) {
-        throw createError("Not authorized to create project", 403);
+        throw createError(403, "Not authorized to create project");
     }
 
     // Find the team lead using email and extract only the user ID
@@ -41,7 +41,7 @@ export const createProjectService = async (userId, payload) => {
 
     // If the provided team lead email does not exist, throw an error
     if (!teamLeadUser) {
-        throw createError("Team lead not found", 404);
+        throw createError(404, "Team lead not found");
     }
 
     // Convert the incoming list of emails into a Set for efficient lookup
@@ -103,26 +103,45 @@ export const updateProjectService = async (userId, projectId, payload) => {
         }
     });
 
-    // If no project is found, either it doesn't exist or user has no access
+
     if (!project) {
-        throw createError("Project not found or access denied", 404);
+        throw createError(404, "Project not found or access denied");
     }
 
-    // Only the team lead is allowed to update the project
-    if (project.team_lead !== userId) {
-        throw createError("Only team lead can update this project", 403);
+    const workspaceMember =
+        await prisma.workspaceMember.findFirst({
+            where: {
+                workspaceId: project.workspaceId,
+                userId,
+            },
+        });
+
+
+    const isAdmin =
+        workspaceMember?.role === "ADMIN";
+
+    const isTeamLead =
+        project.team_lead === userId;
+
+        // Only workspace admins or project team leads can update the project
+
+    if (!isAdmin && !isTeamLead) {
+        throw createError(
+            403,
+            "Only admin or team lead can update this project"
+        );
     }
 
-// ENUM VALIDATION
+    // ENUM VALIDATION
     const validStatus = ["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"];
     const validPriority = ["LOW", "MEDIUM", "HIGH"];
 
     if (status && !validStatus.includes(status)) {
-        throw createError("Invalid status value", 400);
+        throw createError(400, "Invalid status value");
     }
 
     if (priority && !validPriority.includes(priority)) {
-        throw createError("Invalid priority value", 400);
+        throw createError(400, "Invalid priority value");
     }
 
     // Update only the fields that are provided in the payload
@@ -143,4 +162,60 @@ export const updateProjectService = async (userId, projectId, payload) => {
             owner: true,
         },
     });
+};
+
+
+
+// Service function to delete a project with proper access control  and error handling. Only workspace admins or project team leads can delete a project. 
+export const deleteProjectService = async (userId, projectId) => {
+
+    // find project
+    const project = await prisma.project.findUnique({
+        where: {
+            id: projectId,
+        },
+    });
+
+    // project not found
+    if (!project) {
+        throw createError(404, "Project not found");
+    }
+
+    // check workspace membership
+    const workspaceMember =
+        await prisma.workspaceMember.findFirst({
+            where: {
+                workspaceId: project.workspaceId,
+                userId,
+            },
+        });
+
+    if (!workspaceMember) {
+        throw createError(403, "Access denied");
+    }
+
+    // permission check
+    const isAdmin =
+        workspaceMember.role === "ADMIN";
+
+    const isTeamLead =
+        project.team_lead === userId;
+
+    if (!isAdmin && !isTeamLead) {
+        throw createError(
+            403,
+            "Only admin or team lead can delete project"
+        );
+    }
+
+    // delete project
+    await prisma.project.delete({
+        where: {
+            id: projectId,
+        },
+    });
+
+    return {
+        message: "Project deleted successfully",
+    };
 };
