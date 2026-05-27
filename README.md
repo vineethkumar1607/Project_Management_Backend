@@ -669,7 +669,7 @@ http://localhost:5000
 
 Run the Inngest development server to listen for events and execute functions.
 
-npx inngest-cli@latest dev
+npx inngest-cli@latest dev -u http://localhost:5000/api/inngest
 
 Inngest Dev UI will be available at:
 
@@ -679,10 +679,13 @@ http://localhost:8288
 # 3. Start ngrok Tunnel
 Expose your local server to the internet so Clerk webhooks can reach it.
 
-npx ngrok http 5000
+npx ngrok http --domain=janna-blastoporic-dylan.ngrok-free.dev 5000
 
 Example output:
 https://abcd1234.ngrok-free.app
+
+
+http://127.0.0.1:4040/inspect/http
 
 Use this URL in your Clerk webhook configuration.
 

@@ -37,8 +37,13 @@ app.use(
 //     credentials: true,
 //   })
 // );
-
 app.use(express.json());
+
+app.use("/api/inngest", serve({
+  client: inngest,          // Inngest client instance
+  functions                   // Array of all registered Inngest functions
+}));
+
 
 // Clerk middleware
 // - Verifies Clerk authentication
@@ -69,14 +74,16 @@ This route is used by Inngest:
  * - Manage retries
  */
 
-app.use("/api/inngest", serve({
-  client: inngest,          // Inngest client instance
-  functions                   // Array of all registered Inngest functions
-}));
+
 
 
 app.post("/api/webhooks/clerk", async (req, res) => {
   try {
+
+    console.log("WEBHOOK HIT");
+    console.log(req.body);
+
+
     const { type, data } = req.body;
 
     await inngest.send({
@@ -86,7 +93,9 @@ app.post("/api/webhooks/clerk", async (req, res) => {
 
     res.status(200).json({ received: true });
   } catch (error) {
-    console.error(error);
+
+    console.error("WEBHOOK ERROR:", error);
+    
     res.status(500).send("Webhook error");
   }
 });
