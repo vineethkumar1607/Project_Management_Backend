@@ -248,6 +248,7 @@ export const getTaskByIdService = async (taskId, userId) => {
                     name: true,
                     status: true,
                     priority: true,
+                    workspaceId: true,
                 },
             },
         },
