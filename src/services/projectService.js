@@ -52,7 +52,7 @@ export const createProjectService = async (userId, payload) => {
     const membersToAdd = workspace.members
         .filter((member) => member.user && emailSet.has(member.user.email))
         .map((member) => member.user.id);
-    console.log("WORKSPACE MEMBERS:", workspace.members);
+    // console.log("WORKSPACE MEMBERS:", workspace.members);
 
     // Create the project along with associated members
     return await prisma.project.create({

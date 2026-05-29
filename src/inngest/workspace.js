@@ -22,7 +22,7 @@ export const workspaceCreation = inngest.createFunction(
 
         // Organization payload coming from Clerk
         const org = event.data;
-        console.log("ORG EVENT RECEIVED:", event.data);
+        // console.log("ORG EVENT RECEIVED:", event.data);
 
 
         /*
@@ -56,6 +56,14 @@ export const workspaceCreation = inngest.createFunction(
 
         });
 
+        console.log(
+            "WORKSPACE CREATED IN DB",
+            {
+                workspaceId: workspace.id,
+                createdAt: new Date().toISOString(),
+            }
+        );
+
         /*
         Ensure the organization creator is also a workspace member.
     
@@ -65,24 +73,14 @@ export const workspaceCreation = inngest.createFunction(
         Upsert prevents duplicate membership entries if the event
         is retried by Inngest.
         */
-        await step.run("add-owner-as-member", async () => {
-            return prisma.workspaceMember.upsert({
-                where: {
-                    userId_workspaceId: {
-                        userId: org.created_by,
-                        workspaceId: org.id,
-                    },
-                },
 
-                update: {},
-
-                create: {
-                    userId: org.created_by,
-                    workspaceId: org.id,
-                    role: "ADMIN",
-                },
-            });
-        });
+        console.log(
+            "MEMBERSHIP CREATED",
+            {
+                workspaceId: org.id,
+                userId: org.created_by,
+            }
+        );
 
         // Return metadata useful for debugging and execution logs
         return {
@@ -193,8 +191,7 @@ export const workspaceMemberCreated = inngest.createFunction(
         const membership = event.data;
 
         // Map Clerk role to internal WorkspaceRole enum
-        const role =
-            membership.role === "org:admin" ? "ADMIN" : "MEMBER";
+        const role = membership.role === "org:admin" ? "ADMIN" : "MEMBER";
 
         /*
         Insert or update workspace membership.
@@ -202,6 +199,20 @@ export const workspaceMemberCreated = inngest.createFunction(
         The composite unique key ensures one user cannot have
         multiple memberships in the same workspace.
         */
+
+        await step.run("wait-for-workspace", async () => {
+
+            const workspace = await prisma.workspace.findUnique({
+                where: { id: membership.organization.id, },
+            });
+
+            if (!workspace) {
+                throw new Error(`Workspace ${membership.organization.id} not created yet`);
+            }
+        }
+        );
+
+
         await step.run("upsert-workspace-member", async () => {
             return prisma.workspaceMember.upsert({
                 where: {
@@ -211,9 +222,7 @@ export const workspaceMemberCreated = inngest.createFunction(
                     },
                 },
 
-                update: {
-                    role,
-                },
+                update: { role, },
 
                 create: {
                     userId: membership.public_user_data.user_id,

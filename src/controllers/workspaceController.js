@@ -43,6 +43,15 @@ export const getUserWorkspaces = async (req, res, next) => {
             image_url: w.workspace.imageUrl,
         }));
 
+        console.log(
+            "GET WORKSPACES",
+            {
+                userId,
+                count: formattedWorkspaces.length,
+                workspaceIds: formattedWorkspaces.map(w => w.id),
+            }
+        );
+
         // Return the list of workspaces to the client
         return res.status(200).json({
             success: true,

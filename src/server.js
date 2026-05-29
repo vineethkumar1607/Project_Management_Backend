@@ -80,8 +80,8 @@ This route is used by Inngest:
 app.post("/api/webhooks/clerk", async (req, res) => {
   try {
 
-    console.log("WEBHOOK HIT");
-    console.log(req.body);
+    // console.log("WEBHOOK HIT");
+    // console.log(req.body);
 
 
     const { type, data } = req.body;

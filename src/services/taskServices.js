@@ -15,7 +15,7 @@ export const createTaskService = async (userId, payload) => {
         due_date,
     } = payload;
 
-    console.log("payload", payload);
+    // console.log("payload", payload);
 
     // Validate required fields
     if (!projectId) {
@@ -48,8 +48,8 @@ export const createTaskService = async (userId, payload) => {
         throw createError(404, "Project not found");
     }
 
-    console.log("PROJECT MEMBERS:", project.members);
-    console.log("ASSIGNEE ID:", assigneeId);
+    // console.log("PROJECT MEMBERS:", project.members);
+    // console.log("ASSIGNEE ID:", assigneeId);
 
     // Check team lead
     if (project.team_lead !== userId) {
@@ -252,7 +252,7 @@ export const getTaskByIdService = async (taskId, userId) => {
                 },
             },
         },
-    });
+    }); 
 
     if (!task) {
         throw createError(404, "Task not found or unauthorized");

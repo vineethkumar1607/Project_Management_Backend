@@ -31,7 +31,7 @@ export const createProject = async (req, res, next) => {
         const userId = req.userId;
         const { workspaceId } = req.params;
 
-        console.log("REQ BODY:", req.body);
+        // console.log("REQ BODY:", req.body);
         const project = await createProjectService(userId, {
             ...req.body,
             workspaceId,
@@ -69,7 +69,7 @@ export const createProject = async (req, res, next) => {
 
 export const updateProject = async (req, res, next) => {
     try {
-        console.log("UPDATE CONTROLLER HIT");
+        // console.log("UPDATE CONTROLLER HIT");
         const userId = req.userId;
         const { projectId } = req.params;
 
@@ -189,7 +189,9 @@ export const getProjectTasks = async (req, res, next) => {
                 },
                 project: {
                     select: {
+                        id: true,
                         team_lead: true,
+                        workspaceId: true,
                     },
                 },
                 comments: true,
