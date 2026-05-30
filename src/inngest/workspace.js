@@ -156,8 +156,12 @@ export const workspaceDeleted = inngest.createFunction(
         onDelete configuration.
         */
         await step.run("delete-workspace", async () => {
-            return prisma.workspace.delete({
-                where: { id: org.id }
+            return prisma.$transaction(async (tx) => {
+                return tx.workspace.delete({
+                    where: {
+                        id: org.id,
+                    },
+                });
             });
         });
 
