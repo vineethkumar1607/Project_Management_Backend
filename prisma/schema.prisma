@@ -36,6 +36,9 @@ model Workspace {
   projects    Project[]
   owner       User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   members     WorkspaceMember[]
+
+ subscription  WorkspaceSubscription?
+ invoices      BillingHistory[]
 }
 
 model WorkspaceMember {
@@ -48,6 +51,43 @@ model WorkspaceMember {
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
+}
+
+model WorkspaceSubscription {
+  id                     String              @id @default(uuid())
+
+  workspaceId            String              @unique
+  workspace              Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  plan                   SubscriptionPlan    @default(FREE)
+  status                 SubscriptionStatus  @default(ACTIVE)
+  billingCycle           BillingCycle?
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String?             @unique
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean             @default(false)
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  billingHistory         BillingHistory[]
+}
+
+
+model BillingHistory {
+  id                 String                @id @default(uuid())
+
+  workspaceId        String
+  workspace          Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  subscriptionId     String
+  subscription       WorkspaceSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  invoiceNumber      String                @unique
+  razorpayInvoiceId  String?               @unique
+  invoiceUrl         String?
+  amount             Decimal               @db.Decimal(10, 2)
+  currency           String                @default("INR")
+  status             InvoiceStatus
+  paidAt             DateTime?
+  createdAt          DateTime              @default(now())
+  @@index([workspaceId, createdAt])
 }
 
 model Project {
@@ -137,4 +177,32 @@ enum Priority {
   LOW
   MEDIUM
   HIGH
+}
+
+
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PENDING
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  FAILED
 }
