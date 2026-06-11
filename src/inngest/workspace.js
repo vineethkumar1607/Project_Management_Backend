@@ -56,31 +56,23 @@ export const workspaceCreation = inngest.createFunction(
 
         });
 
-        console.log(
-            "WORKSPACE CREATED IN DB",
-            {
-                workspaceId: workspace.id,
-                createdAt: new Date().toISOString(),
-            }
-        );
+        await step.run("bootstrap-free-subscription", async () => {
+            return prisma.workspaceSubscription.upsert({
+                where: {
+                    workspaceId: workspace.id,
+                },
 
-        /*
-        Ensure the organization creator is also a workspace member.
-    
-        Even though the user is the workspace owner, the membership
-        record is required for permission checks and workspace queries.
-    
-        Upsert prevents duplicate membership entries if the event
-        is retried by Inngest.
-        */
+                update: {},
 
-        console.log(
-            "MEMBERSHIP CREATED",
-            {
-                workspaceId: org.id,
-                userId: org.created_by,
-            }
-        );
+                create: {
+                    workspaceId: workspace.id,
+
+                    plan: "FREE",
+
+                    status: "ACTIVE",
+                },
+            });
+        });
 
         // Return metadata useful for debugging and execution logs
         return {
