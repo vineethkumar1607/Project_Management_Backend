@@ -1,7 +1,8 @@
 
-import { addProjectMemberService, removeProjectMemberService } from "../services/membersServices.js"
+import { addProjectMemberService, removeProjectMemberService, getProjectMembersService } from "../services/membersServices.js"
 import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
+import { requireWorkspaceAdmin, } from "../services/authorizationService.js";
 /*
 
 Adds an existing user to a workspace as a member.
@@ -29,17 +30,10 @@ export const addWorkspaceMember = async (req, res, next) => {
 
         const normalizedEmail = email.toLowerCase();
 
-        // Check admin
-        const adminCheck = await prisma.workspaceMember.findFirst({
-            where: {
-                userId,
-                workspaceId
-            }
-        });
-
-        if (!adminCheck || adminCheck.role !== "ADMIN") {
-            return next(createError(403, "Only admins can add members"));
-        }
+        await requireWorkspaceAdmin(
+            workspaceId,
+            userId
+        );
 
         // Find user
         const user = await prisma.user.findUnique({

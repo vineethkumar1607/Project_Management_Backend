@@ -2,6 +2,7 @@ import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
 import { parseDate } from "../utils/date.js";
 import { inngest } from "../inngest/client.js";
+import { requireProjectTeamLead, } from "./authorizationService.js";
 
 export const createTaskService = async (userId, payload) => {
     const {
@@ -52,9 +53,10 @@ export const createTaskService = async (userId, payload) => {
     // console.log("ASSIGNEE ID:", assigneeId);
 
     // Check team lead
-    if (project.team_lead !== userId) {
-        throw createError(403, "Only Team Lead can create tasks");
-    }
+    await requireProjectTeamLead(
+        project,
+        userId
+    );
 
     // Check assignee
     const isMember = project.members.some(
@@ -207,9 +209,10 @@ export const deleteTasksService = async (userId, taskIds) => {
     }
 
     // Authorization check
-    if (project.team_lead !== userId) {
-        throw createError(403, "Only Team Lead can delete tasks");
-    }
+    await requireProjectTeamLead(
+        project,
+        userId
+    );
 
     // Delete all tasks
     const result = await prisma.task.deleteMany({
@@ -252,7 +255,7 @@ export const getTaskByIdService = async (taskId, userId) => {
                 },
             },
         },
-    }); 
+    });
 
     if (!task) {
         throw createError(404, "Task not found or unauthorized");

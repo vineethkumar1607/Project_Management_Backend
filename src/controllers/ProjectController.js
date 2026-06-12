@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "../config/prisma.js";
 import { createProjectService, updateProjectService, deleteProjectService } from "../services/projectService.js";
 import { createError } from "../utils/error.js";
 
-const prisma = new PrismaClient();
+
 
 /*
 
@@ -13,17 +13,7 @@ Fetch all projects that belong to a workspace.
 When the user switches workspace,
 the frontend will load projects for that workspace.
 */
-export const hasPermission = (members, userId, allowedRoles = []) => {
-    return members.some(
-        (member) =>
-            member.userId === userId && allowedRoles.includes(member.role)
-    );
-};
 
-export const ROLES = {
-    ADMIN: "ADMIN",
-    MEMBER: "MEMBER",
-};
 
 
 export const createProject = async (req, res, next) => {
