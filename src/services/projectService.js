@@ -1,7 +1,6 @@
 import prisma from "../config/prisma.js";
 import { getWorkspaceWithMembers } from "./workspaceService.js";
-import { hasPermission } from "../controllers/ProjectController.js";
-import { ROLES } from "../controllers/ProjectController.js";
+import { requireWorkspaceAdmin, requireProjectAdminOrTeamLead, } from "./authorizationService.js";
 import { createError } from "../utils/error.js";
 import { parseDate } from "../utils/date.js";
 
@@ -29,9 +28,10 @@ export const createProjectService = async (userId, payload) => {
     }
 
     // Only users with ADMIN role are allowed to create a project
-    if (!hasPermission(workspace.members, userId, [ROLES.ADMIN])) {
-        throw createError(403, "Not authorized to create project");
-    }
+    await requireWorkspaceAdmin(
+        workspaceId,
+        userId
+    );
 
     // Find the team lead using email and extract only the user ID
     const teamLeadUser = await prisma.user.findUnique({
@@ -49,10 +49,12 @@ export const createProjectService = async (userId, payload) => {
 
     // From workspace members, pick only those users whose emails were provided
     // This ensures only valid workspace members are added to the project
-    const membersToAdd = workspace.members
-        .filter((member) => member.user && emailSet.has(member.user.email))
-        .map((member) => member.user.id);
-    // console.log("WORKSPACE MEMBERS:", workspace.members);
+    const membersToAdd = [
+        ...new Set(
+            workspace.members.filter((member) => member.user && (emailSet.has(member.user.email) ||
+                member.user.id === teamLeadUser.id )).map((member) => member.user.id)
+        ), ];
+
 
     // Create the project along with associated members
     return await prisma.project.create({
@@ -66,9 +68,7 @@ export const createProjectService = async (userId, payload) => {
             priority,
             workspaceId,
             team_lead: teamLeadUser.id,
-            members: {
-                create: membersToAdd.map((userId) => ({ userId })),
-            },
+            members: {create: membersToAdd.map((userId) => ({ userId })),},
         },
         include: {
             members: { include: { user: true } },
@@ -108,29 +108,10 @@ export const updateProjectService = async (userId, projectId, payload) => {
         throw createError(404, "Project not found or access denied");
     }
 
-    const workspaceMember =
-        await prisma.workspaceMember.findFirst({
-            where: {
-                workspaceId: project.workspaceId,
-                userId,
-            },
-        });
-
-
-    const isAdmin =
-        workspaceMember?.role === "ADMIN";
-
-    const isTeamLead =
-        project.team_lead === userId;
-
-        // Only workspace admins or project team leads can update the project
-
-    if (!isAdmin && !isTeamLead) {
-        throw createError(
-            403,
-            "Only admin or team lead can update this project"
-        );
-    }
+    await requireProjectAdminOrTeamLead(
+        project,
+        userId
+    );
 
     // ENUM VALIDATION
     const validStatus = ["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"];
@@ -181,32 +162,10 @@ export const deleteProjectService = async (userId, projectId) => {
         throw createError(404, "Project not found");
     }
 
-    // check workspace membership
-    const workspaceMember =
-        await prisma.workspaceMember.findFirst({
-            where: {
-                workspaceId: project.workspaceId,
-                userId,
-            },
-        });
-
-    if (!workspaceMember) {
-        throw createError(403, "Access denied");
-    }
-
-    // permission check
-    const isAdmin =
-        workspaceMember.role === "ADMIN";
-
-    const isTeamLead =
-        project.team_lead === userId;
-
-    if (!isAdmin && !isTeamLead) {
-        throw createError(
-            403,
-            "Only admin or team lead can delete project"
-        );
-    }
+    await requireProjectAdminOrTeamLead(
+        project,
+        userId
+    );
 
     // delete project
     await prisma.project.delete({

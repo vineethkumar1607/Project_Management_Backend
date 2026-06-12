@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
+import { requireProjectAdminOrTeamLead, } from "./authorizationService.js";
 
 // Service to add a member to a project with checks for team lead role and workspace membership
 export const addProjectMemberService = async (userId, projectId, email) => {
@@ -20,28 +21,10 @@ export const addProjectMemberService = async (userId, projectId, email) => {
     throw createError(404, "Project not found or access denied");
   }
 
-  const workspaceMember =
-    await prisma.workspaceMember.findFirst({
-      where: {
-        workspaceId: project.workspaceId,
-        userId,
-      },
-    });
-
-  const isAdmin =
-    workspaceMember?.role === "ADMIN";
-
-  const isTeamLead =
-    project.team_lead === userId;
-
-
-  // Only team lead or workspace admin can add members
-  if (!isAdmin && !isTeamLead) {
-    throw createError(
-      403,
-      "Only admin or team lead can add members"
-    );
-  }
+  await requireProjectAdminOrTeamLead(
+    project,
+    userId
+  );
 
   // Convert email → userId
   const user = await prisma.user.findUnique({
@@ -56,14 +39,14 @@ export const addProjectMemberService = async (userId, projectId, email) => {
   const memberId = user.id;
 
   // Check workspace membership
-  const targetWorkspaceMember  = await prisma.workspaceMember.findFirst({
+  const targetWorkspaceMember = await prisma.workspaceMember.findFirst({
     where: {
       workspaceId: project.workspaceId,
       userId: memberId
     }
   });
 
-  if (!targetWorkspaceMember ) {
+  if (!targetWorkspaceMember) {
     throw createError(400, "User is not part of the workspace");
   }
 
@@ -120,20 +103,10 @@ export const removeProjectMemberService = async (
     throw createError(404, "Project not found or access denied");
   }
 
-  // Only team lead or workspace admin can remove members
-  const workspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId,
-    },
-  });
-
-  const isAdmin = workspaceMember?.role === "ADMIN";
-  const isTeamLead = project.team_lead === userId;
-
-  if (!isAdmin && !isTeamLead) {
-    throw createError(403, "Only team lead or workspace admin can remove members");
-  }
+  await requireProjectAdminOrTeamLead(
+    project,
+    userId
+  );
 
   // Prevent removing team lead
   if (project.team_lead === memberId) {

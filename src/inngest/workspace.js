@@ -50,6 +50,13 @@ export const workspaceCreation = inngest.createFunction(
                     slug: org.slug,
                     ownerId: org.created_by,
                     imageUrl: org.image_url ?? "",
+
+                    members: {
+                        create: {
+                            userId: org.created_by,
+                            role: "ADMIN",
+                        },
+                    },
                 },
 
             });
@@ -196,17 +203,27 @@ export const workspaceMemberCreated = inngest.createFunction(
         multiple memberships in the same workspace.
         */
 
-        await step.run("wait-for-workspace", async () => {
+        await step.sleep("wait-for-workspace-creation", "5s");
 
-            const workspace = await prisma.workspace.findUnique({
-                where: { id: membership.organization.id, },
-            });
-
-            if (!workspace) {
-                throw new Error(`Workspace ${membership.organization.id} not created yet`);
+        const workspace = await step.run(
+            "verify-workspace-exists",
+            async () => {
+                return prisma.workspace.findUnique({
+                    where: {
+                        id: membership.organization.id,
+                    },
+                });
             }
-        }
         );
+
+        if (!workspace) {
+            return {
+                success: false,
+                skipped: true,
+                reason: "Workspace not created yet",
+            };
+        }
+
 
 
         await step.run("upsert-workspace-member", async () => {

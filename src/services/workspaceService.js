@@ -1,5 +1,6 @@
 import prisma from "../config/prisma.js";
 import { createError } from "../utils/error.js";
+import { requireWorkspaceMember } from "./authorizationService.js";
 
 
 /*
@@ -39,16 +40,10 @@ export const getWorkspaceMembersService = async (
     userId
 ) => {
 
-    const member = await prisma.workspaceMember.findFirst({
-        where: {
-            workspaceId,
-            userId,
-        },
-    });
-
-    if (!member) {
-        throw createError(403, "Access denied");
-    }
+    await requireWorkspaceMember(
+        workspaceId,
+        userId
+    );
 
     const members = await prisma.workspaceMember.findMany({
         where: {
