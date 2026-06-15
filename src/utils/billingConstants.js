@@ -1,0 +1,15 @@
+export const RAZORPAY_PLAN_IDS = {
+    FREE: {},
+
+    PRO: {
+        MONTHLY: process.env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
+        QUARTERLY: process.env.RAZORPAY_PRO_QUARTERLY_PLAN_ID,
+        YEARLY: process.env.RAZORPAY_PRO_YEARLY_PLAN_ID,
+    },
+
+    ENTERPRISE: {
+        MONTHLY: process.env.RAZORPAY_ENTERPRISE_MONTHLY_PLAN_ID,
+        QUARTERLY: process.env.RAZORPAY_ENTERPRISE_QUARTERLY_PLAN_ID,
+        YEARLY: process.env.RAZORPAY_ENTERPRISE_YEARLY_PLAN_ID,
+    },
+};
