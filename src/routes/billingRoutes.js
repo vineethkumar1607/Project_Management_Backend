@@ -1,11 +1,9 @@
 import express from "express";
-import { testEnsureWorkspaceCustomer } from "../controllers/billingController.js";
+import { testEnsureWorkspaceCustomer, createWorkspaceSubscription, } from "../controllers/billingController.js";
 
 const router = express.Router();
 
-router.get(
-    "/test-customer/:workspaceId",
-    testEnsureWorkspaceCustomer
-);
+router.get("/test-customer/:workspaceId", testEnsureWorkspaceCustomer);
+router.post("/subscriptions", createWorkspaceSubscription);
 
 export default router;
