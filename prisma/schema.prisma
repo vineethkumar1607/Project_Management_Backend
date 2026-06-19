@@ -61,6 +61,8 @@ model WorkspaceSubscription {
   plan                   SubscriptionPlan    @default(FREE)
   status                 SubscriptionStatus  @default(ACTIVE)
   billingCycle           BillingCycle?
+  pendingPlan            SubscriptionPlan?
+  pendingBillingCycle    BillingCycle?
   razorpayCustomerId     String?
   razorpaySubscriptionId String?             @unique
   currentPeriodStart     DateTime?

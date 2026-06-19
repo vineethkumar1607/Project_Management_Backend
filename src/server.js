@@ -2,6 +2,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+
+dotenv.config();
+
 import { clerkMiddleware } from '@clerk/express'
 import { serve } from "inngest/express";
 import { inngest } from "./inngest/client.js"
@@ -11,10 +14,12 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/tasksRoutes.js";
 import commentRoutes from "./routes/commenstRoutes.js";
+import webhookRoutes from "./routes/webhookRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import billingRoutes from "./routes/billingRoutes.js";
+
 
 // environment variables
-dotenv.config();
 
 const app = express();
 
@@ -27,16 +32,10 @@ app.use(
   })
 );
 
+// Razorpay webhook route needs raw body
+app.use("/api/webhooks/razorpay", express.raw({ type: "application/json" }));
 
-// Middlewares for cors, json and cookies
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173", // frontend URL
-//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-//     allowedHeaders: ["Content-Type", "Authorization"],
-//     credentials: true,
-//   })
-// );
+
 app.use(express.json());
 
 app.use("/api/inngest", serve({
@@ -45,10 +44,7 @@ app.use("/api/inngest", serve({
 }));
 
 
-// Clerk middleware
-// - Verifies Clerk authentication
-// - Adds auth info to req (req.auth, req.userId, etc.)
-// - Used for protected routes in the app
+// Clerk middleware to handle authentication and user management
 app.use(clerkMiddleware());
 
 
@@ -58,32 +54,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Server is running successfully!" });
 });
 
-/*
-This route is used by Inngest:
-- Discover all registered background functions
-- Execute them when events occur (ex: clerk/user.created)
-- Handle retries, failures, and step execution
-*/
-
-/**
- * Inngest Endpoint
- *
- * Inngest uses this route to:
- * - Discover functions
- * - Trigger event handlers
- * - Manage retries
- */
-
-
-
+// Webhook route for Clerk events
 
 app.post("/api/webhooks/clerk", async (req, res) => {
   try {
-
-    // console.log("WEBHOOK HIT");
-    // console.log(req.body);
-
-
     const { type, data } = req.body;
 
     await inngest.send({
@@ -95,32 +69,26 @@ app.post("/api/webhooks/clerk", async (req, res) => {
   } catch (error) {
 
     console.error("WEBHOOK ERROR:", error);
-    
+
     res.status(500).send("Webhook error");
   }
 });
 
-// Mount workspace-related routes
+//  workspace-related routes
 // All routes inside workspaceRoutes will be prefixed with /api/workspace
-// GET  /api/workspace
-// POST /api/workspace/add-member
+
 app.use("/api/workspace", workspaceRoutes);
-
-// Mount project-related routes
-// GET /api/workspace/:workspaceId/projects
 app.use("/api/projects", projectRoutes);
-
-// Mount task-related routes
-// GET /api/project/:projectId/tasks
 app.use("/api/tasks", taskRoutes);
-
-// Mount comment-related routes
-// GET /api/task/:taskId/comments
 app.use("/api", commentRoutes);
+app.use("/api/billing", billingRoutes);
+
+app.use("/api/webhooks", webhookRoutes);
 
 
 app.use(errorHandler);
 
+// console.log(process.env.RAZORPAY_KEY_ID);
 
 const PORT = process.env.PORT || 5000;
 
