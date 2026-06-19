@@ -10,6 +10,8 @@ export const createRazorpaySubscription = async ({ planId, customerId, }) => {
             customer_id: customerId,
         });
 
+        console.log("RAZORPAY SUBSCRIPTION", subscription);
+
         return subscription;
 
     } catch (error) {

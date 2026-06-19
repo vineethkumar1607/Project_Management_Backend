@@ -14,6 +14,7 @@ import workspaceRoutes from "./routes/workspaceRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/tasksRoutes.js";
 import commentRoutes from "./routes/commenstRoutes.js";
+import webhookRoutes from "./routes/webhookRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import billingRoutes from "./routes/billingRoutes.js";
 
@@ -30,6 +31,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Razorpay webhook route needs raw body
+app.use("/api/webhooks/razorpay", express.raw({ type: "application/json" }));
 
 
 app.use(express.json());
@@ -65,7 +69,7 @@ app.post("/api/webhooks/clerk", async (req, res) => {
   } catch (error) {
 
     console.error("WEBHOOK ERROR:", error);
-    
+
     res.status(500).send("Webhook error");
   }
 });
@@ -78,6 +82,8 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api", commentRoutes);
 app.use("/api/billing", billingRoutes);
+
+app.use("/api/webhooks", webhookRoutes);
 
 
 app.use(errorHandler);

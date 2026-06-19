@@ -40,7 +40,7 @@ const result = envSchema.safeParse(process.env);
 
 if (!result.success) {
 
-    console.error("\n❌ Invalid environment configuration\n");
+    console.error("\n Invalid environment configuration\n");
 
     Object.entries(result.error.flatten().fieldErrors).forEach(([key, errors]) => {
 

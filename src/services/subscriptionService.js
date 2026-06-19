@@ -21,9 +21,6 @@ const planIds = {
 
 export const createSubscription = async ({ workspaceId, userId, plan, billingCycle, }) => {
 
-    console.log({ workspaceId, userId, plan, billingCycle, });
-
-
     // Ensure the user is a workspace admin.
     await requireWorkspaceAdmin(
         workspaceId,
@@ -39,13 +36,18 @@ export const createSubscription = async ({ workspaceId, userId, plan, billingCyc
     if (!subscription) {
         throw createError(404, "Workspace subscription not found");
     }
+
+    if (subscription.pendingPlan) {
+        throw createError(400, "Subscription upgrade already in progress");
+    }
+
     // If the subscription already exists and is active, prevent creating a new subscription.
     if (subscription.plan === plan && subscription.status === "ACTIVE") {
         throw createError(400, `Workspace is already subscribed to ${plan}`);
     }
 
     const planHierarchy = { FREE: 0, PRO: 1, ENTERPRISE: 2, };
-    // Check if the requested plan is a downgrade. 
+    // Check if the requested plan is a downgrade
     if (planHierarchy[plan] < planHierarchy[subscription.plan]) {
         throw createError(400, "Plan downgrades are not supported");
     }
@@ -56,7 +58,12 @@ export const createSubscription = async ({ workspaceId, userId, plan, billingCyc
         throw createError(500, "Billing configuration is invalid"
         );
     }
-
+    
+    console.log("subcriptionservice", {
+        requestedPlan: plan,
+        requestedBillingCycle: billingCycle,
+        razorpayPlanId,
+    });
 
     // Ensure the workspace has a Razorpay customer.
     const customer = await ensureWorkspaceCustomer(workspaceId);
