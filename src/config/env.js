@@ -12,6 +12,8 @@ const envSchema = z.object({
     CLERK_SECRET_KEY: z.string().min(1),
 
     INNGEST_DEV: z.string().optional(),
+    INNGEST_EVENT_KEY: z.string().optional(),
+    INNGEST_SIGNING_KEY: z.string().optional(),
 
     SENDER_EMAIL: z.string().email(),
 

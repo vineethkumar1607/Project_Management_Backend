@@ -69,7 +69,8 @@ export const createSubscription = async ({ workspaceId, userId, plan, billingCyc
     const customer = await ensureWorkspaceCustomer(workspaceId);
 
     const razorpaySubscription = await createRazorpaySubscription({
-        planId: razorpayPlanId, customerId: customer.customerId,
+        planId: razorpayPlanId, 
+        // customerId: customer.customerId,
     });
 
     await prisma.workspaceSubscription.update({
@@ -84,7 +85,8 @@ export const createSubscription = async ({ workspaceId, userId, plan, billingCyc
 
     return {
         subscriptionId: razorpaySubscription.id,
-        customerId: customer.customerId,
+        // customerId: customer.customerId,
         razorpayKey: env.RAZORPAY_KEY_ID,
+      
     };
 };

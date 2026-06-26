@@ -15,10 +15,37 @@ export const handleRazorpayWebhook = async (req, res, next) => {
         console.log(`Received Razorpay webhook: ${event}`);
 
         switch (event) {
-            case "subscription.activated": await handleSubscriptionActivated(payload.payload.subscription.entity);
+
+            case "subscription.authenticated":
+                console.log("SUBSCRIPTION AUTHENTICATED");
+                console.log(payload.payload.subscription.entity);
                 break;
 
-            default: console.log(`Unhandled webhook event: ${event}`);
+            case "subscription.activated":
+                console.log("SUBSCRIPTION ACTIVATED");
+
+                await handleSubscriptionActivated(
+                    payload.payload.subscription.entity
+                );
+                break;
+
+            case "subscription.pending":
+                console.log("SUBSCRIPTION PENDING");
+                console.log(payload.payload.subscription.entity);
+                break;
+
+            case "subscription.halted":
+                console.log("SUBSCRIPTION HALTED");
+                console.log(payload.payload.subscription.entity);
+                break;
+
+            case "subscription.charged":
+                console.log("SUBSCRIPTION CHARGED");
+                console.log(payload.payload.subscription.entity);
+                break;
+
+            default:
+                console.log(`Unhandled webhook event: ${event}`);
                 break;
         }
 
