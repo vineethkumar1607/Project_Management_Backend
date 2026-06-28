@@ -12,5 +12,5 @@ import { Inngest } from "inngest";
 
 export const inngest = new Inngest({
   id: "project-management",
-   isDev: true,
+  isDev: process.env.NODE_ENV !== "production",
 });
